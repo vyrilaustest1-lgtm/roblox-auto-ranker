@@ -1,21 +1,37 @@
-name: Auto Rank Community Members
+
+name: Roblox Community Auto Rank
 
 on:
   schedule:
-    - cron: '*/5 * * * *' # Runs every 5 minutes 24/7
-  workflow_dispatch:       # Lets you click a button to run it manually anytime
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: roblox-autorank
+  cancel-in-progress: false
 
 jobs:
-  run-ranker:
+  rank:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
-      - run: pip install requests
-      - name: Run Auto-Ranker
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run Auto Rank
         env:
           ROBLOX_API_KEY: ${{ secrets.ROBLOX_API_KEY }}
-          GROUP_ID: ${{ secrets.GROUP_ID }}
-        run: python ranker.py
+          DRY_RUN: "true"
+        run: python -u ranker.py
