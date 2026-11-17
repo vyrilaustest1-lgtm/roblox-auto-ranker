@@ -2,7 +2,7 @@ import os
 import requests
 
 API_KEY = os.environ["ROBLOX_API_KEY"].strip()
-GROUP_ID = os.environ["GROUP_ID"].strip()
+GROUP_ID = "1054063204"
 TARGET_KEYWORD = "community member"
 
 HEADERS = {
@@ -13,13 +13,14 @@ HEADERS = {
 def get_target_role_path():
     url = f"https://roblox.com{GROUP_ID}/roles?maxPageSize=100"
     res = requests.get(url, headers=HEADERS)
-    res.raise_for_status()
+    if res.status_code != 200:
+        raise RuntimeError(f"Failed to fetch roles ({res.status_code}): {res.text}")
+        
     roles = res.json().get("groupRoles", [])
-    
     for role in roles:
         name = role.get("displayName", "")
         if TARGET_KEYWORD in name.lower():
-            print(f"Found matching role: '{name}'")
+            print(f"Found matching role: '{name}' ({role.get('path')})")
             return role.get("path")
             
     available = [r.get("displayName") for r in roles]
@@ -31,11 +32,11 @@ def rank_new_members():
     
     while url:
         res = requests.get(url, headers=HEADERS)
-        res.raise_for_status()
+        if res.status_code != 200:
+            raise RuntimeError(f"Failed to fetch members ({res.status_code}): {res.text}")
+            
         data = res.json()
-        
         for member in data.get("groupMemberships", []):
-            # Check if user only has the base Member role or no custom role assigned
             current_role = member.get("role", "")
             if not current_role or current_role.endswith("/roles/0"):
                 membership_path = member["path"]
