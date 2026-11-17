@@ -33,5 +33,5 @@ jobs:
       - name: Run Auto Rank
         env:
           ROBLOX_API_KEY: ${{ secrets.ROBLOX_API_KEY }}
-          DRY_RUN: "true"
+          DRY_RUN: "false"
         run: python -u ranker.py
